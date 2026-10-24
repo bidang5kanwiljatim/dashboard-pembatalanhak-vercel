@@ -5,195 +5,277 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Monitoring Pembatalan HAT - Kanwil BPN Jatim</title>
   
-  <!-- Font & Icon -->
+  <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Chart.js CDN -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
+    .tabular-numbers {
+      font-variant-numeric: tabular-nums;
+    }
     @media print {
-      .no-print {
-        display: none !important;
-      }
-      body {
-        background-color: white !important;
-      }
+      .no-print { display: none !important; }
+      body { background: white !important; }
+      .print-shadow-none { box-shadow: none !important; }
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+<body class="bg-[#f8fafc] text-slate-800 antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
-  <!-- Header Navigasi -->
-  <header class="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40">
+  <!-- Header Navigasi Glassmorphism -->
+  <header class="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 transition-all no-print">
     <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 flex items-center justify-center">
-          <img 
-            src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Logo_Kementerian_ATR-BPN_%282017%29.png" 
-            alt="Logo ATR BPN" 
-            class="w-full h-full object-contain drop-shadow-xs"
-          >
-        </div>
+      <div class="flex items-center space-x-3.5">
+      <div class="w-10 h-10 flex items-center justify-center">
+  <img src="logo_bpn.png" alt="Logo ATRBPN" class="w-full h-full object-contain">
+</div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">DASHBOARD MONITORING PEMBATALAN HAT</h1>
-            <span class="bg-indigo-50 text-indigo-600 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-indigo-100 uppercase">Jatim</span>
+            <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 leading-none">DASHBOARD MONITORING PEMBATALAN HAT</h1>
+            <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60 rounded-full">JATIM</span>
           </div>
-          <p class="text-xs text-slate-500 font-medium">Kanwil BPN Provinsi Jawa Timur</p>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">Kanwil BPN Provinsi Jawa Timur</p>
         </div>
       </div>
-
-      <div class="flex items-center gap-2.5 no-print">
-        <button id="btnAdminMode" onclick="toggleAdminMode()" class="px-3.5 py-1.5 text-xs font-semibold rounded-xl border border-amber-300 text-amber-700 bg-amber-50/60 hover:bg-amber-100 transition-colors flex items-center gap-1.5 shadow-2xs">
-          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+      
+      <div class="flex items-center space-x-2.5">
+        <!-- Badge Mode Admin Aktif -->
+        <div id="adminBadge" class="hidden items-center gap-2 px-3 py-1.5 bg-amber-50/90 border border-amber-300 text-amber-900 rounded-xl text-xs font-semibold shadow-xs">
+          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
           <span>Mode Admin</span>
-          <i class="fa-solid fa-arrow-right-to-bracket text-[10px]"></i>
+          <button onclick="logoutAdmin()" class="ml-1 text-slate-400 hover:text-rose-600 transition" title="Logout Admin">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
+
+        <!-- Tombol Login Admin -->
+        <button id="btnAdminLogin" onclick="openModal('loginModal')" class="bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition border border-slate-200 shadow-xs cursor-pointer active:scale-95">
+          <i class="fa-solid fa-shield-halved text-slate-400"></i>
+          <span>Admin</span>
         </button>
-        <button onclick="openModal('addModal')" class="px-3.5 py-1.5 text-xs font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center gap-1.5 shadow-sm shadow-indigo-600/20">
-          <i class="fa-solid fa-plus text-[11px]"></i>
+
+        <!-- Tombol Tambah Data -->
+        <button onclick="checkAdminAction('add')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shadow-sm shadow-indigo-600/30 cursor-pointer active:scale-95">
+          <i class="fa-solid fa-plus text-xs"></i>
           <span>Tambah</span>
         </button>
-        <button onclick="window.print()" class="px-3.5 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-2xs">
-          <i class="fa-solid fa-print text-[11px]"></i>
-          <span>Cetak</span>
+
+        <!-- Tombol Cetak PDF -->
+        <button onclick="window.print()" class="bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition border border-slate-200 shadow-xs cursor-pointer active:scale-95">
+          <i class="fa-solid fa-print text-slate-400"></i>
+          <span class="hidden sm:inline">Cetak</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Konten Utama -->
-  <main class="max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 space-y-6 flex-1">
+  <main class="max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-14 space-y-6 flex-1">
 
-    <!-- Stat Cards Ringkasan (6 Kolom) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
-      <!-- Total Berkas -->
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
+    <!-- Stat Cards Ringkasan Modern -->
+    <!-- Stat Cards Ringkasan Modern (5 Kolom Mandiri) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <!-- 1. Total Berkas -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
         <div>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Berkas</p>
-          <h3 id="statTotal" class="text-2xl font-extrabold text-slate-900 mt-1 tabular-numbers">0</h3>
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Berkas</p>
+          <h3 id="statTotal" class="text-3xl font-extrabold text-slate-900 mt-1 tabular-numbers">0</h3>
         </div>
-        <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg shadow-xs">
+        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl shadow-xs">
           <i class="fa-solid fa-folder-open"></i>
         </div>
       </div>
 
-      <!-- Berkas Selesai -->
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
+      <!-- 2. Berkas Selesai -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
         <div>
-          <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Selesai</p>
-          <h3 id="statSelesai" class="text-2xl font-extrabold text-emerald-600 mt-1 tabular-numbers">0</h3>
+          <p class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Berkas Selesai</p>
+          <h3 id="statSelesai" class="text-3xl font-extrabold text-emerald-600 mt-1 tabular-numbers">0</h3>
         </div>
-        <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg shadow-xs">
+        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl shadow-xs">
           <i class="fa-solid fa-circle-check"></i>
         </div>
       </div>
 
-      <!-- Sedang Proses -->
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
+      <!-- 3. Sedang Proses -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
         <div>
-          <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Proses</p>
-          <h3 id="statProses" class="text-2xl font-extrabold text-amber-600 mt-1 tabular-numbers">0</h3>
+          <p class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Sedang Proses</p>
+          <h3 id="statProses" class="text-3xl font-extrabold text-amber-600 mt-1 tabular-numbers">0</h3>
         </div>
-        <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-lg shadow-xs">
+        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl shadow-xs">
           <i class="fa-solid fa-clock-rotate-left"></i>
         </div>
       </div>
 
-      <!-- Berkas Ditolak -->
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
+      <!-- 4. Berkas Ditolak -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
         <div>
-          <p class="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Ditolak</p>
-          <h3 id="statTolak" class="text-2xl font-extrabold text-rose-600 mt-1 tabular-numbers">0</h3>
+          <p class="text-[11px] font-bold text-rose-600 uppercase tracking-wider">Berkas Ditolak</p>
+          <h3 id="statTolak" class="text-3xl font-extrabold text-rose-600 mt-1 tabular-numbers">0</h3>
         </div>
-        <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-lg shadow-xs">
+        <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-xl shadow-xs">
           <i class="fa-solid fa-circle-xmark"></i>
         </div>
       </div>
 
-      <!-- Persentase Penyelesaian -->
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
+      <!-- 5. Persentase Penyelesaian -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
         <div>
-          <p class="text-[10px] font-bold text-teal-600 uppercase tracking-wider">Penyelesaian</p>
-          <h3 id="statPersen" class="text-2xl font-extrabold text-teal-600 mt-1 tabular-numbers">0%</h3>
+          <p class="text-[11px] font-bold text-teal-600 uppercase tracking-wider">Penyelesaian</p>
+          <h3 id="statPersen" class="text-3xl font-extrabold text-teal-600 mt-1 tabular-numbers">0%</h3>
         </div>
-        <div class="w-10 h-10 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-lg shadow-xs">
+        <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl shadow-xs">
           <i class="fa-solid fa-chart-pie"></i>
         </div>
       </div>
+    </div>
 
-      <!-- Rata-rata Durasi (SLA) -->
-      <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
+    <!-- Diagram Beban Kerja Stacked -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
         <div>
-          <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Rata-rata SLA</p>
-          <h3 id="statDurasi" class="text-2xl font-extrabold text-indigo-600 mt-1 tabular-numbers">0 <span class="text-xs font-semibold text-slate-400">Hari</span></h3>
+          <h2 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">Distribusi Beban Kerja & Status Berkas per Pengolah</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Komposisi status berkas real-time dengan angka akumulasi beban kerja</p>
         </div>
-        <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-lg shadow-xs">
-          <i class="fa-solid fa-business-time"></i>
+      </div>
+      <div class="h-72 w-full">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Bilah Filter Interaktif (Kantah & Status Tombol Pill) -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 no-print">
+      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-semibold">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-900">Filter & Pencarian Data</h3>
+            <p class="text-[11px] text-slate-400">Pilah data berdasarkan parameter pilihan</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/80">
+            <i class="fa-solid fa-list-check text-[11px] text-slate-400"></i>
+            <span>Ditemukan: <strong id="filterCount" class="text-slate-900">0</strong> data</span>
+          </span>
+          <button type="button" onclick="resetFilters()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 active:scale-95 transition border border-rose-200/80 cursor-pointer">
+            <i class="fa-solid fa-arrow-rotate-left text-[11px]"></i>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid Kontrol Filter (6 Kolom Responsif) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <!-- 1. Pencarian Kata Kunci -->
+        <div class="bg-slate-50/70 rounded-xl p-2.5 border border-slate-200/80 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition">
+          <label class="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 mb-1">
+            <i class="fa-solid fa-magnifying-glass text-indigo-500"></i>
+            <span>Kata Kunci</span>
+          </label>
+          <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari obyek / kantah / SK..." class="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <!-- 2. Filter Kantor Pertanahan -->
+        <div class="bg-slate-50/70 rounded-xl p-2.5 border border-slate-200/80 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition">
+          <label class="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 mb-1">
+            <i class="fa-solid fa-building-flag text-emerald-600"></i>
+            <span>Kantah</span>
+          </label>
+          <select id="filterKantah" onchange="applyFilters()" class="w-full text-xs px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none cursor-pointer">
+            <option value="">Semua Kantah</option>
+          </select>
+        </div>
+
+        <!-- 3. Filter Tahun Masuk -->
+        <div class="bg-slate-50/70 rounded-xl p-2.5 border border-slate-200/80 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition">
+          <label class="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 mb-1">
+            <i class="fa-regular fa-calendar-days text-indigo-600"></i>
+            <span>Tahun</span>
+          </label>
+          <select id="filterTahun" onchange="applyFilters()" class="w-full text-xs px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none cursor-pointer">
+            <option value="">Semua Tahun</option>
+          </select>
+        </div>
+
+        <!-- 4. Filter Pengolah -->
+        <div class="bg-slate-50/70 rounded-xl p-2.5 border border-slate-200/80 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition">
+          <label class="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 mb-1">
+            <i class="fa-solid fa-user-gear text-purple-600"></i>
+            <span>Pengolah</span>
+          </label>
+          <select id="filterPengolah" onchange="applyFilters()" class="w-full text-xs px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none cursor-pointer">
+            <option value="">Semua Pengolah</option>
+          </select>
+        </div>
+
+        <!-- 5. Filter Penandatangan -->
+        <div class="bg-slate-50/70 rounded-xl p-2.5 border border-slate-200/80 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition">
+          <label class="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 mb-1">
+            <i class="fa-solid fa-signature text-teal-600"></i>
+            <span>Penandatangan</span>
+          </label>
+          <select id="filterPenandatangan" onchange="applyFilters()" class="w-full text-xs px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none cursor-pointer">
+            <option value="">Semua Penandatangan</option>
+          </select>
+        </div>
+
+        <!-- 6. Filter Status (Tombol Pill Berwarna) -->
+        <div class="bg-slate-50/70 rounded-xl p-2.5 border border-slate-200/80 flex flex-col justify-between">
+          <label class="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 mb-1">
+            <i class="fa-solid fa-circle-dot text-amber-500"></i>
+            <span>Status Berkas</span>
+          </label>
+          <div class="grid grid-cols-4 gap-1" id="statusButtonGroup">
+            <button type="button" onclick="setStatusFilter('')" data-status="" class="status-btn py-1 rounded-lg text-[10px] font-extrabold border transition text-center bg-slate-900 text-white border-slate-900 shadow-xs cursor-pointer">
+              Semua
+            </button>
+            <button type="button" onclick="setStatusFilter('Selesai')" data-status="Selesai" class="status-btn py-1 rounded-lg text-[10px] font-bold border transition text-center bg-white text-emerald-700 border-slate-200 hover:bg-emerald-50 cursor-pointer">
+              Selesai
+            </button>
+            <button type="button" onclick="setStatusFilter('Proses')" data-status="Proses" class="status-btn py-1 rounded-lg text-[10px] font-bold border transition text-center bg-white text-amber-700 border-slate-200 hover:bg-amber-50 cursor-pointer">
+              Proses
+            </button>
+            <button type="button" onclick="setStatusFilter('Tolak')" data-status="Tolak" class="status-btn py-1 rounded-lg text-[10px] font-bold border transition text-center bg-white text-rose-700 border-slate-200 hover:bg-rose-50 cursor-pointer">
+              Tolak
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Grafik Beban Kerja Pengolah -->
-    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-sm font-bold text-slate-800">Distribusi Beban Kerja Pengolah</h2>
-          <p class="text-xs text-slate-500">Jumlah pembagian berkas berdasarkan staf pengolah data</p>
-        </div>
-        <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">Kanwil Jatim</span>
-      </div>
-      <div class="h-60 w-full">
-        <canvas id="workloadChart"></canvas>
-      </div>
-    </div>
-
-    <!-- Panel Filter & Pencarian -->
-    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row gap-3 items-center justify-between no-print">
-      <div class="relative w-full md:w-96">
-        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        <input 
-          type="text" 
-          id="searchInput" 
-          oninput="applyFilter()" 
-          placeholder="Cari Obyek, Kantah, No SK, atau Pengolah..." 
-          class="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 text-slate-700 placeholder-slate-400 transition-all"
-        >
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-        <select id="filterKantah" onchange="applyFilter()" class="text-xs py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-          <option value="">Semua Kantah</option>
-        </select>
-        <select id="filterTahun" onchange="applyFilter()" class="text-xs py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-          <option value="">Semua Tahun</option>
-        </select>
-        <select id="filterStatus" onchange="applyFilter()" class="text-xs py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-          <option value="">Semua Status</option>
-          <option value="Selesai">Selesai</option>
-          <option value="Proses">Proses</option>
-          <option value="Tolak">Tolak</option>
-        </select>
-        <button onclick="resetFilter()" class="text-xs py-2 px-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
-          Reset
-        </button>
-      </div>
-    </div>
-
-    <!-- Tabel Data Register -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-      <div class="overflow-x-auto max-h-[600px] relative">
-        <table class="w-full text-left border-collapse">
-          <thead class="sticky top-0 z-20 bg-slate-100 text-slate-700 shadow-xs border-b border-slate-200">
+    <!-- TABEL DATA UTAMA: AUTO-FIT 100% (Desain Bersih & Elegan) -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
+      <div class="max-h-[620px] overflow-y-auto overflow-x-hidden custom-scroll">
+        <table class="w-full table-fixed text-left text-xs border-collapse">
+        <thead class="sticky top-0 z-20 bg-slate-100 text-slate-700 shadow-sm border-b border-slate-200">
             <tr class="divide-x divide-slate-200 text-[11px] font-bold uppercase tracking-wider">
               <th class="p-3 w-[4%] text-center bg-slate-100">No</th>
               <th class="p-3 w-[21%] bg-slate-100">Obyek Pembatalan</th>
@@ -207,23 +289,18 @@
               <th class="p-3 w-[4%] text-center no-print bg-slate-100">Aksi</th>
             </tr>
           </thead>
-          <tbody id="tableBody" class="divide-y divide-slate-100 text-xs">
-            <!-- Data baris akan digenerate otomatis -->
+          <tbody id="tableBody" class="divide-y divide-slate-100 text-slate-700">
+            <tr>
+              <td colspan="10" class="p-12 text-center text-slate-400 font-medium">Memuat basis data...</td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <div id="loadingState" class="p-8 text-center text-slate-400 flex items-center justify-center gap-2 text-xs">
-        <i class="fa-solid fa-spinner animate-spin text-indigo-600"></i> Memuat data register...
-      </div>
-      <div id="emptyState" class="hidden p-8 text-center text-slate-400 text-xs">
-        Tidak ditemukan data yang sesuai dengan pencarian atau filter.
-      </div>
     </div>
-
   </main>
-
-  <!-- Sticky Footer Copyright -->
-  <footer class="fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200/80 bg-white/95 backdrop-blur-sm py-2.5 shadow-xs no-print">
+<!-- Footer Copyright -->
+ <!-- Footer Fixed Selalu Terlihat -->
+  <footer class="fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200/80 bg-white/95 backdrop-blur-sm py-2.5 shadow-sm no-print">
     <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-slate-500">
       <div class="flex items-center gap-2">
         <span class="font-semibold text-slate-700">© 2026 Bidang Pengendalian dan Penanganan Sengketa</span>
@@ -235,55 +312,116 @@
       </div>
     </div>
   </footer>
-
-  <!-- Modal Admin: Edit Data & SK -->
-  <div id="adminModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-        <h3 class="text-base font-bold text-slate-900">Menu Admin: Perbarui Data & SK</h3>
-        <button onclick="closeModal('adminModal')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
+  <!-- Modal Login Admin -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-shield-halved text-indigo-600"></i> Autentikasi Admin
+        </h3>
+        <button onclick="closeModal('loginModal')" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
+      <form onsubmit="handleAdminLogin(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Masukan Password </label>
+          <input type="password" id="adminPasswordInput" placeholder="Masukkan password..." required class="w-full border border-slate-200 text-sm px-3.5 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+          <p id="loginError" class="text-rose-600 text-[11px] mt-1.5 hidden flex items-center gap-1 font-semibold">
+            <i class="fa-solid fa-circle-exclamation"></i> Password salah! Silakan coba lagi.
+          </p>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('loginModal')" class="px-3.5 py-2 text-xs font-bold border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition cursor-pointer">Batal</button>
+          <button type="submit" class="px-5 py-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-xs transition cursor-pointer">Masuk</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-      <form id="editForm" onsubmit="submitEdit(event)" class="mt-4 space-y-4 text-xs">
-        <input type="hidden" id="editRowIndex">
-
-        <!-- Obyek Pembatalan -->
+  <!-- Modal Tambah Data Baru -->
+  <div id="addModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-slate-900 text-base">Tambah Data Usulan Pembatalan HAT</h3>
+        <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form id="addForm" onsubmit="submitAdd(event)" class="space-y-3 text-xs">
         <div>
           <label class="block font-bold mb-1 text-slate-700">Obyek Pembatalan</label>
-          <input type="text" id="editObyek" required class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <input type="text" name="obyek" required placeholder="Contoh: HM No. 123/Desa .... an ...." class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
         </div>
-
-        <!-- Kantor Pertanahan & Tahun Masuk -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold mb-1 text-slate-700">Kantor Pertanahan</label>
-            <input type="text" id="editKantah" required class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Contoh: Kab Jombang">
+            <input type="text" name="kantah" required placeholder="Contoh: Kab Banyuwangi (setelah Kab tanpa tanda titik "."" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           </div>
           <div>
             <label class="block font-bold mb-1 text-slate-700">Tahun Masuk</label>
-            <input type="number" id="editTahun" required class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none tabular-numbers" placeholder="2026">
+            <input type="number" name="tahun" value="2026" required class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none tabular-numbers">
           </div>
         </div>
-
-        <!-- Pengolah & Penandatangan -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold mb-1 text-slate-700">Pengolah</label>
-            <input type="text" id="editPengolah" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <input type="text" name="pengolah" placeholder="Contoh : Suko Harsono" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           </div>
           <div>
             <label class="block font-bold mb-1 text-slate-700">Penandatangan</label>
-            <input type="text" id="editPenandatangan" placeholder="Nama penandatangan" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <input type="text" name="penandatangan" placeholder="Kosongkan jika belum ada" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           </div>
         </div>
-
-        <!-- Status & Nomor SK -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold mb-1 text-slate-700">Status</label>
-            <select id="editStatus" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+            <select name="status" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="Proses">Proses</option>
+              <option value="Selesai">Selesai</option>
+              <option value="Tolak">Tolak</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold mb-1 text-slate-700">Progress Terakhir</label>
+            <input type="text" name="progress" placeholder="Pemberitahuan ke Termohon / RPD / SK" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-700">Dasar Tindak Lanjut</label>
+          <input type="text" name="dasar" placeholder="Contoh: Putusan Pengadilan / Cacat Administrasi" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('addModal')" class="px-4 py-2 border border-slate-200 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 transition cursor-pointer">Batal</button>
+          <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-xs transition cursor-pointer">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Admin: Edit Data & Upload Berkas SK -->
+  <div id="adminModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-slate-900 text-base">Menu Admin: Updating Data</h3>
+        <button onclick="closeModal('adminModal')" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form id="editForm" onsubmit="submitEdit(event)" class="space-y-3 text-xs">
+        <input type="hidden" name="rowIndex" id="editRowIndex">
+        <div>
+          <label class="block font-bold mb-1 text-slate-700">Obyek Pembatalan</label>
+          <input type="text" name="obyek" id="editObyek" required class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1 text-slate-700">Pengolah</label>
+            <input type="text" name="pengolah" id="editPengolah" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold mb-1 text-slate-700">Penandatangan</label>
+            <input type="text" name="penandatangan" id="editPenandatangan" placeholder="Nama penandatangan" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1 text-slate-700">Status</label>
+            <select name="status" id="editStatus" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
               <option value="Proses">Proses</option>
               <option value="Selesai">Selesai</option>
               <option value="Tolak">Tolak</option>
@@ -291,341 +429,471 @@
           </div>
           <div>
             <label class="block font-bold mb-1 text-slate-700">Nomor SK</label>
-            <input type="text" id="editNomorSK" placeholder="Nomor SK lengkap..." class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <input type="text" name="nomorSK" id="editNomorSK" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Nomor SK lengkap...">
           </div>
         </div>
-
-        <!-- Tanggal SK & Progress -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold mb-1 text-slate-700">Tanggal SK</label>
-            <input type="date" id="editTglSK" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <input type="text" name="tglSK" id="editTglSK" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Contoh: 1 Oktober 2026 atau 2026-10-01">
           </div>
           <div>
             <label class="block font-bold mb-1 text-slate-700">Progress Terakhir</label>
-            <input type="text" id="editProgress" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <input type="text" name="progress" id="editProgress" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Contoh: SK / Gelar / Berkas">
           </div>
         </div>
-
-        <!-- Upload PDF SK -->
         <div class="border-t border-slate-100 pt-3">
-          <label class="block font-bold mb-1 text-slate-700">Unggah File Dokumen SK (PDF)</label>
-          <input type="file" id="fileSKInput" accept="application/pdf" class="w-full text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
-          <p id="fileStatus" class="text-[11px] text-slate-400 mt-1.5"></p>
+          <label class="block font-bold mb-1 text-slate-800">Unggah File Dokumen SK (PDF)</label>
+          <input type="file" id="fileSKInput" accept=".pdf" class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+          <div id="fileStatus" class="mt-1.5 text-slate-500 text-[11px] font-medium"></div>
         </div>
-
-        <!-- Tombol Aksi Modal -->
-        <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
-          <button type="button" onclick="closeModal('adminModal')" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold">Tutup</button>
-          <button type="submit" id="btnSaveEdit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2">
-            <span>Simpan Perubahan</span>
-          </button>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('adminModal')" class="px-4 py-2 border border-slate-200 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 transition cursor-pointer">Tutup</button>
+          <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-xs transition cursor-pointer">Simpan Perubahan</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal Tambah Data -->
-  <div id="addModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-        <h3 class="text-base font-bold text-slate-900">Tambah Permohonan Baru</h3>
-        <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <form id="addForm" onsubmit="submitAdd(event)" class="mt-4 space-y-4 text-xs">
-        <div>
-          <label class="block font-bold mb-1 text-slate-700">Obyek Pembatalan</label>
-          <input type="text" id="addObyek" required placeholder="Contoh: HM No. 123/Desa Sumber" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold mb-1 text-slate-700">Kantor Pertanahan</label>
-            <input type="text" id="addKantah" required placeholder="Contoh: Kab Malang" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          </div>
-          <div>
-            <label class="block font-bold mb-1 text-slate-700">Tanggal Masuk</label>
-            <input type="date" id="addTglMasuk" required class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold mb-1 text-slate-700">Pengolah</label>
-            <input type="text" id="addPengolah" placeholder="Nama petugas pengolah" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          </div>
-          <div>
-            <label class="block font-bold mb-1 text-slate-700">Penandatangan</label>
-            <input type="text" id="addPenandatangan" placeholder="Nama penandatangan" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          </div>
-        </div>
-        <div>
-          <label class="block font-bold mb-1 text-slate-700">Dasar Pembatalan</label>
-          <input type="text" id="addDasar" placeholder="Contoh: Putusan Pengadilan / Cacat Administrasi" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-        </div>
-
-        <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
-          <button type="button" onclick="closeModal('addModal')" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold">Tutup</button>
-          <button type="submit" id="btnAddSave" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2">
-            <span>Simpan Data</span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Skrip JavaScript Logika Dashboard -->
   <script>
-    // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI BAWAH INI (AKHIRAN /exec)
+    // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI BAWAH INI
     const API_URL = "https://script.google.com/macros/s/AKfycbyQzW6INHjqksGtxaG24f-y2kJx_PD73c3BPaVIbotRIKBnQDaSvnHcuPTOX6bDEtc/exec";
 
     let rawData = [];
-    let workloadChartInstance = null;
-    let isAdmin = false;
+    let currentFilteredData = [];
+    let chartInstance = null;
+    let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+    let selectedStatus = '';
 
-    window.addEventListener('DOMContentLoaded', () => {
+    const INDO_MONTHS = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    function formatIndoDate(dateStr) {
+      if (!dateStr) return '';
+      let str = String(dateStr).trim();
+      if (!str || str === '-' || str.toLowerCase() === 'null') return '';
+
+      str = str.replace(/^tanggal\s+/i, '').trim();
+
+      if (str.includes('...') || str.startsWith('.')) {
+        let clean = str.replace(/^[.\s]+/, '').trim();
+        return clean ? clean : '';
+      }
+
+      const isoMatch = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      if (isoMatch) {
+        const year = isoMatch[1];
+        const monthIndex = parseInt(isoMatch[2], 10) - 1;
+        const day = String(parseInt(isoMatch[3], 10)).padStart(2, '0');
+        if (monthIndex >= 0 && monthIndex < 12) {
+          return `${day} ${INDO_MONTHS[monthIndex]} ${year}`;
+        }
+      }
+
+      const textMatch = str.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+      if (textMatch) {
+        const day = String(parseInt(textMatch[1], 10)).padStart(2, '0');
+        const monthRaw = textMatch[2].toLowerCase();
+        const year = textMatch[3];
+
+        const monthIdx = INDO_MONTHS.findIndex(m => m.toLowerCase() === monthRaw);
+        if (monthIdx !== -1) {
+          return `${day} ${INDO_MONTHS[monthIdx]} ${year}`;
+        }
+      }
+
+      return str;
+    }
+
+    window.onload = function() {
+      updateAdminUI();
       loadData();
-    });
+    };
+
+    function updateAdminUI() {
+      const adminBadge = document.getElementById('adminBadge');
+      const btnAdminLogin = document.getElementById('btnAdminLogin');
+      if (isAdmin) {
+        adminBadge.classList.remove('hidden');
+        adminBadge.classList.add('flex');
+        btnAdminLogin.classList.add('hidden');
+      } else {
+        adminBadge.classList.add('hidden');
+        adminBadge.classList.remove('flex');
+        btnAdminLogin.classList.remove('hidden');
+      }
+    }
+
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const pwd = document.getElementById('adminPasswordInput').value;
+      if (pwd === '1234') {
+        isAdmin = true;
+        sessionStorage.setItem('isAdmin', 'true');
+        document.getElementById('loginError').classList.add('hidden');
+        document.getElementById('adminPasswordInput').value = '';
+        closeModal('loginModal');
+        updateAdminUI();
+        renderTable(currentFilteredData);
+      } else {
+        document.getElementById('loginError').classList.remove('hidden');
+      }
+    }
+
+    function logoutAdmin() {
+      isAdmin = false;
+      sessionStorage.removeItem('isAdmin');
+      updateAdminUI();
+      renderTable(currentFilteredData);
+    }
+
+    function checkAdminAction(action, data = null) {
+      if (!isAdmin) {
+        openModal('loginModal');
+        return;
+      }
+      if (action === 'add') {
+        openModal('addModal');
+      } else if (action === 'edit' && data) {
+        openAdminModal(data);
+      }
+    }
 
     function loadData() {
-      document.getElementById('loadingState').classList.remove('hidden');
-      document.getElementById('emptyState').classList.add('hidden');
-
       fetch(API_URL)
         .then(res => res.json())
-        .then(response => {
-          document.getElementById('loadingState').classList.add('hidden');
-          if (response.status === 'success') {
-            rawData = response.data;
-            initFilters();
-            applyFilter();
-          } else {
-            alert('Gagal memuat data: ' + response.message);
+        .then(result => {
+          if (result.status === 'success') {
+            rawData = result.data;
+            populateFilters();
+            applyFilters();
           }
         })
         .catch(err => {
-          document.getElementById('loadingState').classList.add('hidden');
-          console.error('Fetch error:', err);
+          console.error("Gagal mengambil data:", err);
+          document.getElementById('tableBody').innerHTML = '<tr><td colspan="10" class="p-8 text-center text-rose-500 font-semibold">Gagal terhubung ke Google Sheets API. Pastikan URL Web App sudah benar.</td></tr>';
         });
     }
 
-    function initFilters() {
-      const kantahSet = new Set();
-      const tahunSet = new Set();
+    function populateFilters() {
+      const kantahs = [...new Set(rawData.map(d => (d.kantah || '').trim()).filter(Boolean))].sort();
+      const years = [...new Set(rawData.map(d => d.tahun).filter(Boolean))].sort((a,b) => b - a);
+      const pengolahs = [...new Set(rawData.map(d => d.pengolah).filter(Boolean))].sort();
 
-      rawData.forEach(item => {
-        if (item.kantah && item.kantah.trim() !== '') kantahSet.add(item.kantah.trim());
-        if (item.tahun && item.tahun.trim() !== '') tahunSet.add(item.tahun.trim());
-      });
+      const penandatangans = [...new Set(
+        rawData
+          .map(d => (d.penandatangan || '').trim())
+          .filter(p => p && p !== '-' && p !== 'null' && p !== 'undefined')
+      )].sort();
 
-      const filterKantah = document.getElementById('filterKantah');
-      filterKantah.innerHTML = '<option value="">Semua Kantah</option>';
-      Array.from(kantahSet).sort().forEach(k => {
-        filterKantah.innerHTML += `<option value="${k}">${k}</option>`;
-      });
+      const kantahSelect = document.getElementById('filterKantah');
+      kantahSelect.innerHTML = '<option value="">Semua Kantah</option>';
+      kantahs.forEach(k => kantahSelect.innerHTML += `<option value="${k}">${k}</option>`);
 
-      const filterTahun = document.getElementById('filterTahun');
-      filterTahun.innerHTML = '<option value="">Semua Tahun</option>';
-      Array.from(tahunSet).sort((a,b) => b - a).forEach(t => {
-        filterTahun.innerHTML += `<option value="${t}">${t}</option>`;
-      });
+      const yearSelect = document.getElementById('filterTahun');
+      yearSelect.innerHTML = '<option value="">Semua Tahun</option>';
+      years.forEach(y => yearSelect.innerHTML += `<option value="${y}">${y}</option>`);
+
+      const pengolahSelect = document.getElementById('filterPengolah');
+      pengolahSelect.innerHTML = '<option value="">Semua Pengolah</option>';
+      pengolahs.forEach(p => pengolahSelect.innerHTML += `<option value="${p}">${p}</option>`);
+
+      const ttdSelect = document.getElementById('filterPenandatangan');
+      ttdSelect.innerHTML = '<option value="">Semua Penandatangan</option>';
+      penandatangans.forEach(t => ttdSelect.innerHTML += `<option value="${t}">${t}</option>`);
     }
 
-    function applyFilter() {
-      const q = document.getElementById('searchInput').value.toLowerCase();
-      const selKantah = document.getElementById('filterKantah').value;
-      const selTahun = document.getElementById('filterTahun').value;
-      const selStatus = document.getElementById('filterStatus').value;
+    function setStatusFilter(status) {
+      selectedStatus = status;
 
-      const filtered = rawData.filter(item => {
-        const matchQ = !q || 
-          (item.obyek && item.obyek.toLowerCase().includes(q)) ||
-          (item.kantah && item.kantah.toLowerCase().includes(q)) ||
-          (item.nomorSK && item.nomorSK.toLowerCase().includes(q)) ||
-          (item.pengolah && item.pengolah.toLowerCase().includes(q));
-
-        const matchKantah = !selKantah || (item.kantah && item.kantah.trim() === selKantah);
-        const matchTahun = !selTahun || (item.tahun && String(item.tahun).trim() === selTahun);
-        const matchStatus = !selStatus || (item.status && item.status.toLowerCase() === selStatus.toLowerCase());
-
-        return matchQ && matchKantah && matchTahun && matchStatus;
+      document.querySelectorAll('.status-btn').forEach(btn => {
+        const btnStatus = btn.getAttribute('data-status');
+        if (btnStatus === status) {
+          if (status === 'Selesai') {
+            btn.className = 'status-btn py-1 rounded-lg text-[10px] font-extrabold border transition text-center bg-emerald-600 text-white border-emerald-600 shadow-xs cursor-pointer';
+          } else if (status === 'Proses') {
+            btn.className = 'status-btn py-1 rounded-lg text-[10px] font-extrabold border transition text-center bg-amber-500 text-white border-amber-500 shadow-xs cursor-pointer';
+          } else if (status === 'Tolak') {
+            btn.className = 'status-btn py-1 rounded-lg text-[10px] font-extrabold border transition text-center bg-rose-600 text-white border-rose-600 shadow-xs cursor-pointer';
+          } else {
+            btn.className = 'status-btn py-1 rounded-lg text-[10px] font-extrabold border transition text-center bg-slate-900 text-white border-slate-900 shadow-xs cursor-pointer';
+          }
+        } else {
+          if (btnStatus === 'Selesai') {
+            btn.className = 'status-btn py-1 rounded-lg text-[10px] font-bold border transition text-center bg-white text-emerald-700 border-slate-200 hover:bg-emerald-50 cursor-pointer';
+          } else if (btnStatus === 'Proses') {
+            btn.className = 'status-btn py-1 rounded-lg text-[10px] font-bold border transition text-center bg-white text-amber-700 border-slate-200 hover:bg-amber-50 cursor-pointer';
+          } else if (btnStatus === 'Tolak') {
+            btn.className = 'status-btn py-1 rounded-lg text-[10px] font-bold border transition text-center bg-white text-rose-700 border-slate-200 hover:bg-rose-50 cursor-pointer';
+          } else {
+            btn.className = 'status-btn py-1 rounded-lg text-[10px] font-bold border transition text-center bg-white text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer';
+          }
+        }
       });
 
-      renderStats(filtered);
-      renderChart(filtered);
-      renderTable(filtered);
+      applyFilters();
     }
 
-    function resetFilter() {
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const kantah = document.getElementById('filterKantah').value;
+      const year = document.getElementById('filterTahun').value;
+      const pengolah = document.getElementById('filterPengolah').value;
+      const penandatangan = document.getElementById('filterPenandatangan').value;
+      const status = selectedStatus;
+
+      currentFilteredData = rawData.filter(d => {
+        const matchSearch = !search || 
+          (d.obyek && d.obyek.toLowerCase().includes(search)) || 
+          (d.kantah && d.kantah.toLowerCase().includes(search)) ||
+          (d.nomorSK && d.nomorSK.toLowerCase().includes(search)) ||
+          (d.tglSK && d.tglSK.toLowerCase().includes(search)) ||
+          (d.progress && d.progress.toLowerCase().includes(search));
+        const matchKantah = !kantah || d.kantah === kantah;
+        const matchYear = !year || String(d.tahun) === String(year);
+        const matchPengolah = !pengolah || d.pengolah === pengolah;
+        const matchPenandatangan = !penandatangan || d.penandatangan === penandatangan;
+        const matchStatus = !status || (d.status && d.status.toLowerCase() === status.toLowerCase());
+
+        return matchSearch && matchKantah && matchYear && matchPengolah && matchPenandatangan && matchStatus;
+      });
+
+      const counterEl = document.getElementById('filterCount');
+      if (counterEl) counterEl.innerText = currentFilteredData.length;
+
+      renderDashboard(currentFilteredData);
+    }
+
+    function resetFilters() {
       document.getElementById('searchInput').value = '';
       document.getElementById('filterKantah').value = '';
       document.getElementById('filterTahun').value = '';
-      document.getElementById('filterStatus').value = '';
-      applyFilter();
+      document.getElementById('filterPengolah').value = '';
+      document.getElementById('filterPenandatangan').value = '';
+      setStatusFilter('');
     }
 
-    function renderStats(data) {
+    function renderDashboard(data) {
+      renderStats(data);
+      renderChart(data);
+      renderTable(data);
+    }
+
+function renderStats(data) {
       const total = data.length;
       const selesai = data.filter(d => d.status.toLowerCase() === 'selesai').length;
       const proses = data.filter(d => d.status.toLowerCase() === 'proses').length;
       const tolak = data.filter(d => d.status.toLowerCase() === 'tolak').length;
 
+      // Rumus: (Selesai + Tolak) / Total Berkas * 100
       const persentase = total > 0 ? (((selesai + tolak) / total) * 100).toFixed(1) : 0;
-
-      let totalHari = 0;
-      let countHari = 0;
-
-      data.forEach(item => {
-        if (item.tglMasuk && item.tglSK) {
-          const dMasuk = new Date(item.tglMasuk);
-          const dSK = new Date(item.tglSK);
-          if (!isNaN(dMasuk) && !isNaN(dSK) && dSK >= dMasuk) {
-            const diffDays = Math.ceil(Math.abs(dSK - dMasuk) / (1000 * 60 * 60 * 24));
-            totalHari += diffDays;
-            countHari++;
-          }
-        }
-      });
-
-      const avgHari = countHari > 0 ? Math.round(totalHari / countHari) : 0;
 
       document.getElementById('statTotal').innerText = total;
       document.getElementById('statSelesai').innerText = selesai;
       document.getElementById('statProses').innerText = proses;
       document.getElementById('statTolak').innerText = tolak;
       document.getElementById('statPersen').innerText = persentase + '%';
-      document.getElementById('statDurasi').innerHTML = `${avgHari} <span class="text-xs font-semibold text-slate-400">Hari</span>`;
     }
 
     function renderChart(data) {
-      const counts = {};
+      const pengolahMap = {};
       data.forEach(d => {
-        const p = d.pengolah ? d.pengolah.trim() : 'Belum Ditentukan';
-        counts[p] = (counts[p] || 0) + 1;
+        const p = d.pengolah || 'Belum Ditentukan';
+        if (!pengolahMap[p]) {
+          pengolahMap[p] = { Selesai: 0, Proses: 0, Tolak: 0 };
+        }
+        const st = d.status ? d.status.charAt(0).toUpperCase() + d.status.slice(1).toLowerCase() : 'Proses';
+        if (pengolahMap[p][st] !== undefined) {
+          pengolahMap[p][st]++;
+        } else {
+          pengolahMap[p]['Proses']++;
+        }
       });
 
-      const labels = Object.keys(counts);
-      const values = Object.values(counts);
+      const labels = Object.keys(pengolahMap);
+      const dataSelesai = labels.map(l => pengolahMap[l].Selesai);
+      const dataProses = labels.map(l => pengolahMap[l].Proses);
+      const dataTolak = labels.map(l => pengolahMap[l].Tolak);
+      const dataTotals = labels.map(l => pengolahMap[l].Selesai + pengolahMap[l].Proses + pengolahMap[l].Tolak);
 
-      if (workloadChartInstance) {
-        workloadChartInstance.destroy();
-      }
+      const maxVal = Math.max(...dataTotals, 5);
 
-      const ctx = document.getElementById('workloadChart').getContext('2d');
-      workloadChartInstance = new Chart(ctx, {
+      const ctx = document.getElementById('barChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      const totalLabelsPlugin = {
+        id: 'totalLabels',
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          ctx.save();
+          ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
+          ctx.fillStyle = '#475569';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+
+          chart.data.labels.forEach((label, i) => {
+            const total = dataTotals[i];
+            if (total === 0) return;
+
+            const metaTolak = chart.getDatasetMeta(2);
+            const metaProses = chart.getDatasetMeta(1);
+            const metaSelesai = chart.getDatasetMeta(0);
+
+            let topY = chart.chartArea.bottom;
+            let x = 0;
+
+            [metaTolak, metaProses, metaSelesai].forEach(meta => {
+              if (meta.data[i] && meta.data[i].y < topY) {
+                topY = meta.data[i].y;
+                x = meta.data[i].x;
+              }
+            });
+
+            ctx.fillText(`${total}`, x, topY - 4);
+          });
+          ctx.restore();
+        }
+      };
+
+      chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
-          datasets: [{
-            label: 'Jumlah Berkas',
-            data: values,
-            backgroundColor: '#6366f1',
-            borderRadius: 8,
-            maxBarThickness: 32
-          }]
+          datasets: [
+            { label: 'Selesai', data: dataSelesai, backgroundColor: '#10b981', borderRadius: 4 },
+            { label: 'Proses', data: dataProses, backgroundColor: '#f59e0b', borderRadius: 4 },
+            { label: 'Tolak', data: dataTolak, backgroundColor: '#f43f5e', borderRadius: 4 }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
+          layout: {
+            padding: { top: 20 }
           },
           scales: {
-            y: {
-              beginAtZero: true,
+            x: { 
+              stacked: true, 
+              grid: { display: false },
+              ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
+            },
+            y: { 
+              stacked: true, 
+              beginAtZero: true, 
+              suggestedMax: maxVal + 6,
               ticks: { precision: 0, font: { family: 'Plus Jakarta Sans', size: 10 } },
               grid: { color: '#f1f5f9' }
+            }
+          },
+          plugins: {
+            legend: { 
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                boxWidth: 8,
+                font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }
+              }
             },
-            x: {
-              ticks: { font: { family: 'Plus Jakarta Sans', size: 10 } },
-              grid: { display: false }
+            tooltip: { 
+              mode: 'index', 
+              intersect: false,
+              callbacks: {
+                footer: function(items) {
+                  let sum = 0;
+                  items.forEach(function(item) {
+                    sum += item.parsed.y;
+                  });
+                  return 'Total: ' + sum + ' Berkas';
+                }
+              }
             }
           }
-        }
+        },
+        plugins: [totalLabelsPlugin]
       });
     }
 
     function renderTable(data) {
-      const tableBody = document.getElementById('tableBody');
-      const emptyState = document.getElementById('emptyState');
-
+      const tbody = document.getElementById('tableBody');
       if (data.length === 0) {
-        tableBody.innerHTML = '';
-        emptyState.classList.remove('hidden');
+        tbody.innerHTML = '<tr><td colspan="10" class="p-12 text-center text-slate-400 font-medium">Tidak ada data yang cocok dengan kriteria pencarian/filter.</td></tr>';
         return;
       }
 
-      emptyState.classList.add('hidden');
-      tableBody.innerHTML = data.map((item, index) => {
-        // Indikator Aging Alert: Jika berkas berstatus proses > 180 hari
-        let agingAlert = '';
-        if (item.status && item.status.toLowerCase() === 'proses' && item.tglMasuk) {
-          const tglMasuk = new Date(item.tglMasuk);
-          if (!isNaN(tglMasuk)) {
-            const sekarang = new Date();
-            const umurHari = Math.floor((sekarang - tglMasuk) / (1000 * 60 * 60 * 24));
-            if (umurHari > 180) {
-              agingAlert = `
-                <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 text-[10px] font-semibold border border-rose-200 mt-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                  <span>Menumpuk (${umurHari} hari)</span>
-                </div>
-              `;
-            }
-          }
+      tbody.innerHTML = data.map((d, index) => {
+        let badgeColor = "bg-slate-100 text-slate-700 border-slate-200";
+        if (d.status.toLowerCase() === 'selesai') {
+          badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+        } else if (d.status.toLowerCase() === 'proses') {
+          badgeColor = "bg-amber-50 text-amber-700 border-amber-200";
+        } else if (d.status.toLowerCase() === 'tolak') {
+          badgeColor = "bg-rose-50 text-rose-700 border-rose-200";
         }
 
+        let skHtml = '<span class="text-slate-300 block text-center">-</span>';
+        
+        if (d.nomorSK && d.nomorSK !== '-') {
+          let pureNomor = d.nomorSK;
+          let rawTanggal = d.tglSK || '';
+
+          if (pureNomor.toLowerCase().includes('tanggal')) {
+            const parts = pureNomor.split(/tanggal/i);
+            pureNomor = parts[0].trim();
+            if (!rawTanggal && parts[1]) {
+              rawTanggal = parts[1].trim();
+            }
+          }
+
+          const formattedTanggal = formatIndoDate(rawTanggal);
+
+          const fileIcon = d.fileSKUrl 
+            ? `<a href="${d.fileSKUrl}" target="_blank" class="text-rose-500 hover:text-rose-700 ml-1.5 inline-flex items-center transition" title="Unduh File Dokumen SK"><i class="fa-solid fa-file-pdf text-xs"></i></a>` 
+            : '';
+
+          const tglHtml = formattedTanggal 
+            ? `<div class="text-[10px] text-slate-500 font-medium flex items-center gap-1 mt-0.5"><i class="fa-regular fa-calendar-days text-[9px] text-indigo-500"></i><span class="break-words tabular-numbers">${formattedTanggal}</span></div>` 
+            : '';
+
+          skHtml = `
+            <div class="flex flex-col justify-center leading-snug py-0.5">
+              <div class="font-bold text-slate-900 text-[11px] break-all flex items-center">
+                <span>${pureNomor}</span>
+                ${fileIcon}
+              </div>
+              ${tglHtml}
+            </div>
+          `;
+        }
+
+        const actionBtn = isAdmin 
+          ? `<button onclick='checkAdminAction("edit", ${JSON.stringify(d)})' class="p-1.5 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition cursor-pointer" title="Edit / Upload SK"><i class="fa-solid fa-pen-to-square"></i></button>`
+          : `<button onclick='checkAdminAction("edit")' class="p-1.5 text-slate-300 hover:text-slate-500 rounded-lg transition cursor-pointer" title="Login admin untuk edit"><i class="fa-solid fa-lock text-xs"></i></button>`;
+
         return `
-          <tr class="transition-colors hover:bg-indigo-100/70 hover:shadow-inner duration-100 border-b border-slate-100">
-            <td class="p-3 text-center text-slate-400 text-xs tabular-numbers font-medium">${index + 1}</td>
-            <td class="p-3 text-xs font-semibold text-slate-800 leading-snug">
-              <div>${item.obyek || '-'}</div>
-              ${agingAlert}
+            <tr class="transition-colors hover:bg-indigo-100/70 hover:shadow-inner duration-100 border-b border-slate-100">
+            <td class="p-3 text-center text-slate-400 font-semibold tabular-numbers">${index + 1}</td>
+            <td class="p-3 font-semibold text-slate-900 break-words leading-relaxed" title="${d.obyek}">
+              ${d.obyek}
             </td>
-            <td class="p-3 text-xs text-slate-600">${item.kantah || '-'}</td>
-            <td class="p-3 text-center text-xs text-slate-500 tabular-numbers">${item.tahun || '-'}</td>
-            <td class="p-3 text-xs text-slate-700 font-medium">${item.pengolah || '-'}</td>
-            <td class="p-3 text-center text-xs text-slate-500">${item.progress || '-'}</td>
-            <td class="p-3 text-center text-xs">${getStatusBadge(item.status)}</td>
-            <td class="p-3 text-xs text-slate-600">${formatSKInfo(item)}</td>
-            <td class="p-3 text-xs text-slate-600">${item.penandatangan || '-'}</td>
-            <td class="p-3 text-center text-xs no-print">
-              <button onclick='openAdminModal(${JSON.stringify(item)})' class="text-indigo-600 hover:text-indigo-800 p-1 rounded-lg hover:bg-indigo-50 transition-colors" title="Edit Data">
-                <i class="fa-regular fa-pen-to-square"></i>
-              </button>
+            <td class="p-3 text-slate-600 break-words leading-tight font-medium">${d.kantah}</td>
+            <td class="p-3 text-slate-600 text-center font-semibold tabular-numbers">${d.tahun}</td>
+            <td class="p-3 text-slate-700 font-semibold break-words leading-tight">${d.pengolah}</td>
+            <td class="p-3 text-slate-500 text-center break-words leading-tight text-[11px] font-medium" title="${d.progress}">${d.progress || '-'}</td>
+            <td class="p-3 text-center">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${badgeColor}">
+                ${d.status}
+              </span>
+            </td>
+            <td class="p-3">${skHtml}</td>
+            <td class="p-3 text-slate-700 font-semibold break-words leading-tight">${d.penandatangan || '-'}</td>
+            <td class="p-3 text-center no-print">
+              ${actionBtn}
             </td>
           </tr>
         `;
       }).join('');
-    }
-
-    function getStatusBadge(status) {
-      const s = (status || '').toLowerCase();
-      if (s === 'selesai') {
-        return `<span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">Selesai</span>`;
-      } else if (s === 'tolak') {
-        return `<span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-200">Tolak</span>`;
-      } else {
-        return `<span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-200">Proses</span>`;
-      }
-    }
-
-    function formatSKInfo(item) {
-      if (!item.nomorSK && !item.tglSK) return '-';
-      const no = item.nomorSK || 'Belum ada No SK';
-      const tgl = item.tglSK ? formatDateDisplay(item.tglSK) : '';
-      let linkDoc = '';
-      if (item.fileSKUrl) {
-        linkDoc = `<a href="${item.fileSKUrl}" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold ml-1"><i class="fa-solid fa-file-pdf"></i> Lihat SK</a>`;
-      }
-      return `<div><span class="font-medium text-slate-700">${no}</span> ${tgl ? `<span class="text-[11px] text-slate-400">(${tgl})</span>` : ''} ${linkDoc}</div>`;
-    }
-
-    function formatDateDisplay(dStr) {
-      const date = new Date(dStr);
-      if (isNaN(date)) return dStr;
-      return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
     function openModal(id) {
@@ -638,34 +906,53 @@
 
     function openAdminModal(item) {
       document.getElementById('editRowIndex').value = item.rowIndex;
-      document.getElementById('editObyek').value = item.obyek || '';
-      document.getElementById('editKantah').value = item.kantah || '';
-      document.getElementById('editTahun').value = item.tahun || '';
-      document.getElementById('editPengolah').value = item.pengolah || '';
+      document.getElementById('editObyek').value = item.obyek;
+      document.getElementById('editPengolah').value = item.pengolah;
       document.getElementById('editPenandatangan').value = (item.penandatangan && item.penandatangan !== '-') ? item.penandatangan : '';
-      document.getElementById('editStatus').value = item.status || 'Proses';
-      document.getElementById('editNomorSK').value = item.nomorSK || '';
-      document.getElementById('editTglSK').value = item.tglSK || '';
+      document.getElementById('editStatus').value = item.status;
+      document.getElementById('editNomorSK').value = item.nomorSK;
+      document.getElementById('editTglSK').value = item.tglSK;
       document.getElementById('editProgress').value = item.progress || '';
       document.getElementById('fileSKInput').value = '';
       document.getElementById('fileStatus').innerText = item.fileSKUrl ? 'Tersedia dokumen SK terunggah' : 'Belum ada dokumen SK';
       openModal('adminModal');
     }
 
+    function submitAdd(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        obyek: form.obyek.value,
+        kantah: form.kantah.value,
+        tahun: form.tahun.value,
+        pengolah: form.pengolah.value,
+        penandatangan: form.penandatangan.value,
+        status: form.status.value,
+        progress: form.progress.value,
+        dasar: form.dasar.value
+      };
+
+      fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "add", payload: data })
+      })
+      .then(res => res.json())
+      .then(() => {
+        closeModal('addModal');
+        form.reset();
+        loadData();
+      })
+      .catch(err => console.error(err));
+    }
+
     function submitEdit(e) {
       e.preventDefault();
-      const btn = document.getElementById('btnSaveEdit');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
-
       const rowIndex = document.getElementById('editRowIndex').value;
       const fileInput = document.getElementById('fileSKInput');
 
       const editData = {
         rowIndex: rowIndex,
         obyek: document.getElementById('editObyek').value,
-        kantah: document.getElementById('editKantah').value,
-        tahun: document.getElementById('editTahun').value,
         pengolah: document.getElementById('editPengolah').value,
         penandatangan: document.getElementById('editPenandatangan').value,
         status: document.getElementById('editStatus').value,
@@ -699,73 +986,17 @@
             })
             .then(res => res.json())
             .then(() => {
-              btn.disabled = false;
-              btn.innerHTML = `Simpan Perubahan`;
               closeModal('adminModal');
               loadData();
             });
           };
           reader.readAsDataURL(file);
         } else {
-          btn.disabled = false;
-          btn.innerHTML = `Simpan Perubahan`;
           closeModal('adminModal');
           loadData();
         }
       })
-      .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = `Simpan Perubahan`;
-        alert('Terjadi kesalahan saat menyimpan data.');
-      });
-    }
-
-    function submitAdd(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnAddSave');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
-
-      const addDataPayload = {
-        obyek: document.getElementById('addObyek').value,
-        kantah: document.getElementById('addKantah').value,
-        tglMasuk: document.getElementById('addTglMasuk').value,
-        pengolah: document.getElementById('addPengolah').value,
-        penandatangan: document.getElementById('addPenandatangan').value,
-        dasar: document.getElementById('addDasar').value,
-        status: 'Proses',
-        progress: 'Pemeriksaan Berkas'
-      };
-
-      fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "add", payload: addDataPayload })
-      })
-      .then(res => res.json())
-      .then(() => {
-        btn.disabled = false;
-        btn.innerHTML = `Simpan Data`;
-        document.getElementById('addForm').reset();
-        closeModal('addModal');
-        loadData();
-      })
-      .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = `Simpan Data`;
-        alert('Terjadi kesalahan saat menambah data.');
-      });
-    }
-
-    function toggleAdminMode() {
-      isAdmin = !isAdmin;
-      const btn = document.getElementById('btnAdminMode');
-      if (isAdmin) {
-        btn.classList.add('bg-amber-500', 'text-white', 'border-amber-600');
-        btn.classList.remove('bg-amber-50/60', 'text-amber-700', 'border-amber-300');
-      } else {
-        btn.classList.remove('bg-amber-500', 'text-white', 'border-amber-600');
-        btn.classList.add('bg-amber-50/60', 'text-amber-700', 'border-amber-300');
-      }
+      .catch(err => console.error(err));
     }
   </script>
 </body>
