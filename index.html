@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Usulan Pembatalan HAT - Kanwil BPN Jatim</title>
+  <title>Dashboard Monitoring Pembatalan HAT - Kanwil BPN Jatim</title>
   
   <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,7 +56,7 @@
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 leading-none">REGISTER USULAN PEMBATALAN HAT</h1>
+            <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 leading-none">DASHBOARD MONITORING PEMBATALAN HAT</h1>
             <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60 rounded-full">JATIM</span>
           </div>
           <p class="text-xs text-slate-500 font-medium mt-0.5">Kanwil BPN Provinsi Jawa Timur</p>
@@ -309,13 +309,13 @@
   <div id="addModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="font-extrabold text-slate-900 text-base">Tambah Register Usulan Pembatalan</h3>
+        <h3 class="font-extrabold text-slate-900 text-base">Tambah Data Usulan Pembatalan HAT</h3>
         <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <form id="addForm" onsubmit="submitAdd(event)" class="space-y-3 text-xs">
         <div>
           <label class="block font-bold mb-1 text-slate-700">Obyek Pembatalan</label>
-          <input type="text" name="obyek" required placeholder="Contoh: HM No. 123/Kel..." class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <input type="text" name="obyek" required placeholder="Contoh: HM No. 123/Desa .... an ...." class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -330,7 +330,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold mb-1 text-slate-700">Pengolah</label>
-            <input type="text" name="pengolah" placeholder="Nama pengolah..." class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <input type="text" name="pengolah" placeholder="Contoh Suko Harsono" class="w-full border border-slate-200 p-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           </div>
           <div>
             <label class="block font-bold mb-1 text-slate-700">Penandatangan</label>
