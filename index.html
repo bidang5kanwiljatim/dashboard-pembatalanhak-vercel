@@ -97,7 +97,7 @@
   <main class="max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-14 space-y-6 flex-1">
 
     <!-- Stat Cards Ringkasan Modern -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
         <div>
           <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Berkas</p>
@@ -129,6 +129,16 @@
         <div>
           <p class="text-[11px] font-bold text-rose-600 uppercase tracking-wider">Berkas Ditolak</p>
           <h3 id="statTolak" class="text-3xl font-extrabold text-rose-600 mt-1 tabular-numbers">0</h3>
+          <!-- KARTU TAMBAHAN: PERSENTASE PENYELESAIAN -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex items-center justify-between">
+        <div>
+          <p class="text-[11px] font-bold text-teal-600 uppercase tracking-wider">Penyelesaian</p>
+          <h3 id="statPersen" class="text-3xl font-extrabold text-teal-600 mt-1 tabular-numbers">0%</h3>
+        </div>
+        <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl shadow-xs">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+      </div>
         </div>
         <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-xl shadow-xs">
           <i class="fa-solid fa-circle-xmark"></i>
@@ -662,11 +672,20 @@
       renderTable(data);
     }
 
-    function renderStats(data) {
-      document.getElementById('statTotal').innerText = data.length;
-      document.getElementById('statSelesai').innerText = data.filter(d => d.status.toLowerCase() === 'selesai').length;
-      document.getElementById('statProses').innerText = data.filter(d => d.status.toLowerCase() === 'proses').length;
-      document.getElementById('statTolak').innerText = data.filter(d => d.status.toLowerCase() === 'tolak').length;
+function renderStats(data) {
+      const total = data.length;
+      const selesai = data.filter(d => d.status.toLowerCase() === 'selesai').length;
+      const proses = data.filter(d => d.status.toLowerCase() === 'proses').length;
+      const tolak = data.filter(d => d.status.toLowerCase() === 'tolak').length;
+
+      // Rumus: (Selesai + Tolak) / Total Berkas * 100
+      const persentase = total > 0 ? (((selesai + tolak) / total) * 100).toFixed(1) : 0;
+
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statSelesai').innerText = selesai;
+      document.getElementById('statProses').innerText = proses;
+      document.getElementById('statTolak').innerText = tolak;
+      document.getElementById('statPersen').innerText = persentase + '%';
     }
 
     function renderChart(data) {
